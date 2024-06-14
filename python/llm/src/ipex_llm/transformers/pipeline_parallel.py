@@ -190,14 +190,14 @@ def pipeline_parallel_generate(self,
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
         new_past_key_values = outputs.past_key_values
         if not isinstance(new_past_key_values, DynamicCache):
-        if local_rank == 1:
-            value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
-            past_key_values_placeholder = tuple (
-                (value_placeholder, value_placeholder) for _ in range(layer_start)
-            ) + new_past_key_values[layer_start:]
-            _past_key_values = past_key_values_placeholder
-        else:
-            _past_key_values = new_past_key_values
+            if local_rank == 1:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple (
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + new_past_key_values[layer_start:]
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = new_past_key_values
 
         toc = time.time()
         if step == 0:
