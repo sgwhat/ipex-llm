@@ -224,7 +224,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 ### 签名验证
 
-针对 2.3.0 nightly 版本的 portable zip/tgz, 可以使用如下命令验证其签名：
+针对 2.2.0 版本的 portable zip/tgz, 可以使用如下命令验证其签名：
 
 ```
 openssl cms -verify -in <portable-zip-or-tgz-file-name>.pkcs1.sig -inform DER -content <portable-zip-or-tgz-file-name> -out nul -noverify

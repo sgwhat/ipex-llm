@@ -226,7 +226,7 @@ The currently Ollama Portable Zip is based on Ollama v0.6.2; in addition, the fo
 
 ### Signature Verification
 
-For portable zip/tgz version 2.3.0 nightly, you could verify its signature with the following command:
+For portable zip/tgz version 2.2.0, you could verify its signature with the following command:
 
 ```
 openssl cms -verify -in <portable-zip-or-tgz-file-name>.pkcs1.sig -inform DER -content <portable-zip-or-tgz-file-name> -out nul -noverify
