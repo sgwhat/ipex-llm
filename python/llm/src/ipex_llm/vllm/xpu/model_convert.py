@@ -48,7 +48,7 @@ def _sample_get_logits(
         logits = lm_head(hidden_states)
         if embedding_bias is not None:
             logits += embedding_bias
-    if self.use_gather:
+    if self.use_all_gather:
         logits = tensor_model_parallel_gather(logits)
     else:
         logits = tensor_model_parallel_all_gather(logits)
@@ -63,6 +63,8 @@ def _model_sample_convert():
 
 
 def _ipex_llm_convert(load_in_low_bit):
+    # import pdb
+    # pdb.set_trace()
     from vllm.worker.xpu_model_runner import XPUModelRunner
     from ipex_llm.vllm.xpu.ipex_llm_wrapper import get_ipex_llm_wrapper
     from ipex_llm.vllm.xpu.ipex_llm_v1_wrapper import get_ipex_llm_v1_wrapper
@@ -77,7 +79,8 @@ def _ipex_llm_convert(load_in_low_bit):
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
-        _model_sample_convert()
+        if "gemma-3" not in self.model_config.model.lower():
+            _model_sample_convert()
 
         # from vllm.utils import measure_device_memory
         from vllm.utils import DeviceMemoryProfiler
@@ -98,7 +101,8 @@ def get_load_function(low_bit):
                         "codegeex4-all" in self.vllm_config.model_config.model.lower() or
                         "chatglm" in self.vllm_config.model_config.model.lower()) and \
                         "gptq" not in self.model_config.model.lower() and \
-                        "awq" not in self.model_config.model.lower():
+                        "awq" not in self.model_config.model.lower() and \
+                        "qwen3" not in self.model_config.model.lower():
                     self.model.apply(padding_mlp)
                 from ipex_llm import optimize_model
                 not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)

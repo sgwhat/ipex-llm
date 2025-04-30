@@ -3,7 +3,7 @@
    < <a href='./llamacpp_portable_zip_gpu_quickstart.md'>English</a> | <b>中文</b> >
 </p>
      
-本指南演示如何使用 [llama.cpp portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行。
+本指南演示如何使用 [llama.cpp portable zip](https://github.com/ipex-llm/ipex-llm/releases/tag/v2.2.0) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行。
 
 > [!Important]
 > 使用最新版 *llama.cpp Portable Zip* 可以在 Xeon 上通过1到2张 Arc A770 GPU 运行 **DeepSeek-R1-671B-Q4_K_M**；详见如下[指南](#flashmoe-运行-deepseek-v3r1)。
@@ -42,7 +42,7 @@
 
 ### 步骤 1：下载与解压
 
-对于 Windows 用户，请从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0)下载 IPEX-LLM llama.cpp portable zip。
+对于 Windows 用户，请从此[链接](https://github.com/ipex-llm/ipex-llm/releases/tag/v2.2.0)下载 IPEX-LLM llama.cpp portable zip。
 
 然后，将 zip 文件解压到一个文件夹中。
 
@@ -128,7 +128,7 @@ llama_perf_context_print:       total time =   xxxxx.xx ms /  1385 tokens
 
 ### 步骤 1：下载与解压
 
-对于 Linux 用户，从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0)下载 IPEX-LLM llama.cpp portable tgz。
+对于 Linux 用户，从此[链接](https://github.com/ipex-llm/ipex-llm/releases/tag/v2.2.0)下载 IPEX-LLM llama.cpp portable tgz。
 
 然后，将 tgz 文件解压到一个文件夹中。
 
@@ -208,6 +208,8 @@ FlashMoE 是一款基于 `llama.cpp` 构建的命令行工具，针对 DeepSeek 
 - [DeepSeek-V3-Q6_K](https://huggingface.co/unsloth/DeepSeek-V3-GGUF/tree/main/DeepSeek-V3-Q6_K)
 - [DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M)
 - [DeepSeek-R1-Q6_K](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q6_K)
+- [DeepSeek-V3-0324-GGUF/Q4_K_M](https://huggingface.co/unsloth/DeepSeek-V3-0324-GGUF/tree/main/Q4_K_M)
+- [DeepSeek-V3-0324-GGUF/Q6_K](https://huggingface.co/unsloth/DeepSeek-V3-0324-GGUF/tree/main/Q6_K)
 
 硬件要求： 
 - 380 GB 内存
@@ -223,6 +225,7 @@ FlashMoE 是一款基于 `llama.cpp` 构建的命令行工具，针对 DeepSeek 
 
 请将 `/PATH/TO/DeepSeek-R1-Q4_K_M-00001-of-00009.gguf` 更改为您的模型路径，然后运行 `DeepSeek-R1-Q4_K_M.gguf`
 
+##### 命令行
 ```bash
 ./flash-moe -m /PATH/TO/DeepSeek-R1-Q4_K_M-00001-of-00009.gguf --prompt "What's AI?" -no-cnv
 ```
@@ -271,6 +274,33 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 </think>
 
 <answer>XXXX</answer> [end of text]
+```
+
+##### 推理服务
+```bash
+./flash-moe -m /PATH/TO/DeepSeek-R1-Q4_K_M-00001-of-00009.gguf --serve -n 512 -np 2 -c 4096
+```
+> `-n`代表预测字符的数目, `-np`代表并行解码序列的数目, `-c`代表整个上下文序列的最大长度，你可以根据你的需要自行调整这些参数数值。
+>
+> 推理服务需要[v2.3.0 nightly build](https://github.com/ipex-llm/ipex-llm/releases/tag/v2.3.0-nightly)或者更新的版本。
+
+部分输出：
+
+```bash
+...
+llama_init_from_model: graph nodes  = 3560
+llama_init_from_model: graph splits = 121
+common_init_from_params: setting dry_penalty_last_n to ctx_size = 4096
+common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+srv          init: initializing slots, n_slots = 2
+slot         init: id  0 | task -1 | new slot n_ctx_slot = 2048
+slot         init: id  1 | task -1 | new slot n_ctx_slot = 2048
+main: model loaded
+main: chat template, chat_template: {% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% set ns = namespace(is_first=false, is_tool=false, is_output_first=true, system_prompt='', is_first_sp=true) %}{%- for message in messages %}{%- if message['role'] == 'system' %}{%- if ns.is_first_sp %}{% set ns.system_prompt = ns.system_prompt + message['content'] %}{% set ns.is_first_sp = false %}{%- else %}{% set ns.system_prompt = ns.system_prompt + '\n\n' + message['content'] %}{%- endif %}{%- endif %}{%- endfor %}{{ bos_token }}{{ ns.system_prompt }}{%- for message in messages %}{%- if message['role'] == 'user' %}{%- set ns.is_tool = false -%}{{'<｜User｜>' + message['content']}}{%- endif %}{%- if message['role'] == 'assistant' and 'tool_calls' in message %}{%- set ns.is_tool = false -%}{%- for tool in message['tool_calls'] %}{%- if not ns.is_first %}{%- if message['content'] is none %}{{'<｜Assistant｜><｜tool▁calls▁begin｜><｜tool▁call▁begin｜>' + tool['type'] + '<｜tool▁sep｜>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<｜tool▁call▁end｜>'}}{%- else %}{{'<｜Assistant｜>' + message['content'] + '<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>' + tool['type'] + '<｜tool▁sep｜>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<｜tool▁call▁end｜>'}}{%- endif %}{%- set ns.is_first = true -%}{%- else %}{{'\n' + '<｜tool▁call▁begin｜>' + tool['type'] + '<｜tool▁sep｜>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<｜tool▁call▁end｜>'}}{%- endif %}{%- endfor %}{{'<｜tool▁calls▁end｜><｜end▁of▁sentence｜>'}}{%- endif %}{%- if message['role'] == 'assistant' and 'tool_calls' not in message %}{%- if ns.is_tool %}{{'<｜tool▁outputs▁end｜>' + message['content'] + '<｜end▁of▁sentence｜>'}}{%- set ns.is_tool = false -%}{%- else %}{% set content = message['content'] %}{% if '</think>' in content %}{% set content = content.split('</think>')[-1] %}{% endif %}{{'<｜Assistant｜>' + content + '<｜end▁of▁sentence｜>'}}{%- endif %}{%- endif %}{%- if message['role'] == 'tool' %}{%- set ns.is_tool = true -%}{%- if ns.is_output_first %}{{'<｜tool▁outputs▁begin｜><｜tool▁output▁begin｜>' + message['content'] + '<｜tool▁output▁end｜>'}}{%- set ns.is_output_first = false %}{%- else %}{{'<｜tool▁output▁begin｜>' + message['content'] + '<｜tool▁output▁end｜>'}}{%- endif %}{%- endif %}{%- endfor -%}{% if ns.is_tool %}{{'<｜tool▁outputs▁end｜>'}}{% endif %}{% if add_generation_prompt and not ns.is_tool %}{{'<｜Assistant｜>'}}{% endif %}, example_format: 'You are a helpful assistant
+
+<｜User｜>Hello<｜Assistant｜>Hi there<｜end▁of▁sentence｜><｜User｜>How are you?<｜Assistant｜>'
+main: server is listening on http://127.0.0.1:8080 - starting the main loop
+srv  update_slots: all slots are idle
 ```
 
 

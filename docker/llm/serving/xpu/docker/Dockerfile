@@ -54,19 +54,20 @@ RUN set -eux && \
     #
     # Install Intel PyTorch extension for LLM inference
     pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/xpu && \
+    pip install intel-extension-for-pytorch==2.6.10+xpu --extra-index-url=https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     #
     # Build torch-ccl
     mkdir -p /build && \
     cd /build && \
     git clone https://github.com/intel/torch-ccl.git && \
     cd torch-ccl && \
-    git checkout ccl_torch2.5.0+xpu && \
+    git checkout ccl_torch2.6.0+xpu && \
     git submodule sync && \
     git submodule update --init --recursive && \
     # This patch will enable build torch-ccl with pytorch 2.6 environment
-    git apply /tmp/ccl_torch.patch && \
+    # git apply /tmp/ccl_torch.patch && \
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py bdist_wheel && \
-    # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
+    # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.6.0+xpu-cp311-cp311-linux_x86_64.whl
     # Build oneCCL
     pip install ninja && \
     cd /build/ && \
@@ -85,7 +86,7 @@ RUN set -eux && \
 FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
 
 # Copy the built torch-ccl package from the build stage
-COPY --from=build /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl /opt/
+COPY --from=build /build/torch-ccl/dist/oneccl_bind_pt-2.6.0+xpu-cp311-cp311-linux_x86_64.whl /opt/
 COPY --from=build /llm/ /llm/
 COPY --from=build /build/oneCCL/build/src/libccl.so.1.0 /opt/intel/1ccl-wks/lib/
 COPY --from=build /build/oneCCL/build/src/libccl.so.1 /opt/intel/1ccl-wks/lib/
@@ -144,9 +145,10 @@ RUN set -eux && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
+    pip install intel-extension-for-pytorch==2.6.10+xpu --extra-index-url=https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     #
     # Install torch-ccl
-    pip install /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl && \
+    pip install /opt/oneccl_bind_pt-2.6.0+xpu-cp311-cp311-linux_x86_64.whl && \
     #
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
@@ -168,21 +170,19 @@ RUN set -eux && \
     mkdir -p /llm && \
     cd /llm && \
     rm -rf /tmp/neo && \
-    # Install intel_extension_for_pytorch
-    pip install intel-extension-for-pytorch==2.6.10+xpu --extra-index-url=https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    pip uninstall -y oneccl oneccl-devel && \
-    pip install intel-opencl-rt==2025.0.2 intel-openmp==2025.0.2 && \
-    #
     # Install vllm
-    git clone -b v0.6.6.post1 https://github.com/vllm-project/vllm /llm/vllm && \
+    git clone -b v0.8.3 https://github.com/vllm-project/vllm /llm/vllm && \
     cd /llm/vllm && \
     git apply /llm/vllm_for_multi_arc.patch && \
-    pip install setuptools-scm && \
+    pip install setuptools-scm==8.2.0 setuptools==78.1.0 && \
     pip install --upgrade cmake && \
-    VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
+    pip install -v -r requirements/xpu.txt && \
+    VLLM_TARGET_DEVICE=xpu python setup.py install && \
+    pip install intel-extension-for-pytorch==2.6.10+xpu --extra-index-url=https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip uninstall -y oneccl oneccl-devel && \
     rm -rf /llm/vllm_for_multi_arc.patch && \
     pip install mpi4py fastapi uvicorn openai && \
-    pip install ray
+    pip install ray numba
 
 
 WORKDIR /llm/
