@@ -142,22 +142,25 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 
 By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
 
-To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` **before staring Ollama Serve**, as shwon below (if Ollama serve is already running, please make sure to stop it first):
+To increase the context length, you could set environment variable `OLLAMA_NUM_CTX` **before staring Ollama Serve**, as shwon below (if Ollama serve is already running, please make sure to stop it first):
 
 - For **Windows** users:
 
   - Open "Command Prompt", and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-  - Set `IPEX_LLM_NUM_CTX` to the desired length in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
+  - Set `OLLAMA_NUM_CTX` to the desired length in the "Command Prompt, e.g. `set OLLAMA_NUM_CTX=16384`
   - Start Ollama serve through `start-ollama.bat`
 
 - For **Linux** users:
 
   - In a terminal, navigate to the extracted folder through `cd PATH\TO\EXTRACTED\FOLDER`
-  - Set `IPEX_LLM_NUM_CTX` to the desired length in the terminal, e.g. `export IPEX_LLM_NUM_CTX=16384`
+  - Set `OLLAMA_NUM_CTX` to the desired length in the terminal, e.g. `export OLLAMA_NUM_CTX=16384`
   - Start Ollama serve through `./start-ollama.sh`
 
 > [!TIP]
-> `IPEX_LLM_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
+> `OLLAMA_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
+
+> [!NOTE]
+> For versions earlier than 2.7.0b20250429, please set the `IPEX_LLM_NUM_CTX` variable.
 
 ### Select specific GPU(s) to run Ollama when multiple ones are available
 
