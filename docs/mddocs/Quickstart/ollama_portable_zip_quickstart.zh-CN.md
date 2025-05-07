@@ -112,24 +112,24 @@ cd PATH/TO/EXTRACTED/FOLDER
 
 ### 通过切换源提升模型下载速度
 
-Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope` 或 `ollama`，你可以切换模型的下载源。
+Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设置环境变量 `OLLAMA_MODEL_SOURCE` 为 `modelscope` 或 `ollama`，你可以切换模型的下载源。
 
 例如，如果你想运行 `deepseek-r1:7b` 但从 Ollama 库的下载速度较慢，可以通过如下方式改用 ModelScope 上的模型源：
 
 - 对于 **Windows** 用户：
 
   - 打开命令提示符通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
-  - 在命令提示符中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
+  - 在命令提示符中运行 `set OLLAMA_MODEL_SOURCE=modelscope`
   - 运行 `ollama run deepseek-r1:7b`
 
 - 对于 **Linux** 用户：
 
   - 在另一个终端（不同于运行 Ollama serve 的终端）中，输入指令 `cd PATH/TO/EXTRACTED/FOLDER` 进入解压后的文件夹
-  - 在终端中运行 `export IPEX_LLM_MODEL_SOURCE=modelscope`
+  - 在终端中运行 `export OLLAMA_MODEL_SOURCE=modelscope`
   - 运行 `./ollama run deepseek-r1:7b`
 
 > [!Tip]
-> 使用 `set IPEX_LLM_MODEL_SOURCE=modelscope` 下载的模型，在执行 `ollama list` 时仍会显示实际的模型 ID，例如：
+> 使用 `set OLLAMA_MODEL_SOURCE=modelscope` 下载的模型，在执行 `ollama list` 时仍会显示实际的模型 ID，例如：
 > ```
 > NAME                                                             ID              SIZE      MODIFIED
 > modelscope.cn/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M    f482d5af6aec    4.7 GB    About a minute ago
@@ -158,7 +158,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 > `OLLAMA_NUM_CTX` 的优先级高于模型 `Modelfile` 中设置的 `num_ctx`。
 
 > [!NOTE]
-> 对早于 2.7.0b20250429 的版本，请设置 IPEX_LLM_NUM_CTX 变量。
+> 对早于 2.7.0b20250429 的版本，请改用 IPEX_LLM_NUM_CTX 变量。
 
 ### 在多块 GPU 可用时选择特定的 GPU 来运行 Ollama
 
